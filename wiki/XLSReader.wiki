@@ -1,5 +1,3 @@
-_Użycie programu
-
 ==Programik konsolowy do odczytu plików xls==
 
 ===Biblioteki===
