@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="QueryTree" default="compile">
+	<property file="build.properties" />
+
+	<property name="base.build.dir" value="build" />
+	<property name="build.dir" value="${base.build.dir}/classes" />
+	<property name="test.build.dir" value="${base.build.dir}/test-classes" />
+	<property name="dist.dir" value="dist" />
+	<property name="jar.file" value="${dist.dir}/${base.name}.jar" />
+
+
+	<path id="compile.classpath">
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="run.classpath">
+		<path refid="compile.classpath" />
+		<pathelement location="${build.dir}" />
+	</path>
+
+	<path id="test.compile.classpath">
+		<path refid="run.classpath" />
+		<fileset dir="lib_test">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="test.run.classpath">
+		<path refid="test.compile.classpath" />
+		<pathelement location="${test.build.dir}" />
+	</path>
+
+
+	<target name="all" depends="clean, compile" />
+
+	<target name="clean">
+		<delete dir="${base.build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<target name="compile">
+		<mkdir dir="${build.dir}" />
+		<copy todir="${build.dir}">
+			<fileset dir="src" includes="**/*.properties" />
+		</copy>
+		<javac srcdir="src" destdir="${build.dir}"
+			debug="on" optimize="off" deprecation="off">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+
+	<target name="compile-test" depends="compile">
+		<mkdir dir="${test.build.dir}" />
+		<copy todir="${test.build.dir}">
+			<fileset dir="src" includes="**/*.properties" />
+		</copy>
+		<javac srcdir="test" destdir="${test.build.dir}"
+			debug="on" optimize="off" deprecation="off">
+			<classpath refid="test.compile.classpath" />
+		</javac>
+	</target>
+
+	<target name="test" depends="compile-test"
+		description="Uruchamia testy jednostkowe.">
+		<!--
+		Uruchomienie pojedynczego testu:
+		ant test -Dtest=NazwaKlasyZTestami
+		-->
+		<junit haltonfailure="on">
+			<batchtest unless="test">
+				<fileset dir="test" includes="**/*Test.java" />
+			</batchtest>
+			<batchtest if="test">
+				<fileset dir="test" includes="**/${test}.java" />
+			</batchtest>
+			<formatter type="plain" usefile="false" />
+			<classpath refid="test.run.classpath" />
+		</junit>
+	</target>
+
+	<target name="run" depends="compile">
+		<java classname="${main.class}" classpathref="run.classpath" />
+	</target>
+
+	<target name="dist" depends="all, test">
+		<mkdir dir="${dist.dir}" />
+		<manifestclasspath property="manifest.classpath" jarfile="${jar.file}">
+			<classpath refid="run.classpath" />
+		</manifestclasspath>
+		<jar jarfile="${jar.file}">
+			<fileset dir="${build.dir}" />
+			<manifest>
+				<attribute name="Title" value="${title}" />
+				<attribute name="Main-Class" value="${main.class}" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+</project>
