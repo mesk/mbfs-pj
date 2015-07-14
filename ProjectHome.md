@@ -1,0 +1,1 @@
+Ten projekt zawiera programy które które są mi czasem pomocne.
